@@ -18,8 +18,6 @@ const makeUrl = (searchOption: movieOptions, page?: number): string => {
   return url;
 };
 
-
-
 export const searchApi = (
   searchOption: movieOptions,
   page?: number

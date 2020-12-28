@@ -9,6 +9,7 @@ router.get("/movie/popular", (req, res) => {
 
   searchApi("popular", page ? +page : undefined)
     .then((response) => {
+      /** Send response or data */
       res.json(response);
     })
     .catch((error) => {
