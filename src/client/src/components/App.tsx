@@ -5,8 +5,9 @@ import axios from "axios";
 import { Wrapper } from "./style";
 
 import OptionsLimit from "./OptionsLimit";
+import RandomMovie from "./RandomMovie";
 
-interface Movie {
+export interface Movie {
   genre_ids: number[];
   id: number;
   original_title: string;
@@ -28,31 +29,42 @@ export const App: React.FC = () => {
     movies: [],
   });
 
-  const [pageLimit, setPageLimit] = useState(0);
+  // const request = (page: number): Promise<Movie[]> => {
+  //   return axios
+  //     .get(`http://localhost:3000/tmdb/movie/popular?page=${page}`)
+  //     .then((response) => {
+  //       return response.data.results;
+  //     })
+  //     .catch((error) => console.error(error));
+  // };
 
-  const request = (page: number, movies: Movie[]): Promise<void> => {
-    return axios
-      .get(`http://localhost:3000/tmdb/movie/popular?page=${page}`)
-      .then((response) => {
-        movies.push(...response.data.results);
-      })
-      .catch((error) => console.error(error));
-  };
+  // async function getMovies(page?: number) {
+  //   const limit = page ? page : 1;
+  //   let movies: Movie[] = [];
+
+  //   for (let i = 0; i < limit; i++) {
+  //     let data = await request(i);
+  //     movies.push(...data);
+  //   }
+
+  //   console.log(movies);
+  //   let randomMovie = movies[0];
+  //   setState({ movies, randomMovie });
+  // }
 
   const getMovies = () => {
-    const limit = pageLimit ? pageLimit : 1;
-    let promises: Promise<void>[] = [];
-    let movies: Movie[] = [];
+    let min = 1;
+    let max = 500;
+    let page = Math.floor(Math.random() * (max - min + 1) + min);
 
-    for (let i = 0; i < limit; i++) {
-      request(i, movies);
-    }
-
-    Promise.all(promises).then(() => {
-      console.log(promises, movies);
-      const movie: Movie = movies[0];
-      setState({ movies, randomMovie: movie });
-    });
+    axios
+      .get(`http://localhost:3000/tmdb/movie/popular?page=${page}`)
+      .then((response) => {
+        let movies = response.data.results;
+        let randomMovie = movies[0];
+        setState({ movies, randomMovie });
+      })
+      .catch((error) => console.error(error));
   };
 
   const { randomMovie, movies } = state;
@@ -60,8 +72,13 @@ export const App: React.FC = () => {
   if (!movies.length) {
     return (
       <Wrapper>
-        <OptionsLimit setPageLimit={setPageLimit} />
-        <button onClick={getMovies} style={{ padding: "5rem" }}>
+        {/* <OptionsLimit getMovies={getMovies} /> */}
+        <button
+          onClick={() => {
+            getMovies();
+          }}
+          style={{ padding: "5rem" }}
+        >
           Get Movies
         </button>
       </Wrapper>
@@ -69,7 +86,8 @@ export const App: React.FC = () => {
   } else {
     return (
       <Wrapper>
-        <OptionsLimit setPageLimit={setPageLimit} />
+        {/* <OptionsLimit getMovies={getMovies} /> */}
+        <RandomMovie randomMovie={randomMovie} />
       </Wrapper>
     );
   }
