@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 
+import GlobalStyle from './styles';
+
 import axios from "axios";
 
 import { Wrapper } from "./style";
@@ -7,15 +9,23 @@ import { Wrapper } from "./style";
 import OptionsLimit from "./OptionsLimit";
 import RandomMovie from "./RandomMovie";
 
+import { generateRandomInt } from './utils/';
+
 export interface Movie {
+  poster_path: string | null;
+  adult: boolean;
+  overview: string;
+  release_date: string;
   genre_ids: number[];
   id: number;
   original_title: string;
-  overiew: string;
-  poster_path: string;
-  release_date: string;
+  original_language: string;
   title: string;
-  [key: string]: any;
+  backdrop_path: string | null;
+  popularity: number;
+  vote_count: number;
+  video: boolean;
+  vote_average: number;
 }
 
 interface State {
@@ -29,64 +39,57 @@ export const App: React.FC = () => {
     movies: [],
   });
 
-  // const request = (page: number): Promise<Movie[]> => {
-  //   return axios
-  //     .get(`http://localhost:3000/tmdb/movie/popular?page=${page}`)
-  //     .then((response) => {
-  //       return response.data.results;
-  //     })
-  //     .catch((error) => console.error(error));
-  // };
-
-  // async function getMovies(page?: number) {
-  //   const limit = page ? page : 1;
-  //   let movies: Movie[] = [];
-
-  //   for (let i = 0; i < limit; i++) {
-  //     let data = await request(i);
-  //     movies.push(...data);
-  //   }
-
-  //   console.log(movies);
-  //   let randomMovie = movies[0];
-  //   setState({ movies, randomMovie });
-  // }
-
-  const getMovies = () => {
-    let min = 1;
-    let max = 500;
-    let page = Math.floor(Math.random() * (max - min + 1) + min);
-
-    axios
+  const request = (page: number): Promise<Movie[]> => {
+    return axios
       .get(`http://localhost:3000/tmdb/movie/popular?page=${page}`)
       .then((response) => {
-        let movies = response.data.results;
-        let randomMovie = movies[0];
-        setState({ movies, randomMovie });
+        return response.data.results;
       })
       .catch((error) => console.error(error));
   };
+
+  async function getMovies(page?: number) {
+    const limit = page ? page : 1;
+    let randomInt = generateRandomInt(1, 500);
+    let movies: Movie[] = [];
+
+    /** Ensure that it does not go over 500 page limit */
+    if (randomInt + limit > 500) {
+      randomInt -= limit;
+    }
+
+    for (let i = 0; i < limit; i++) {
+      let data = await request(i + randomInt);
+      movies.push(...data);
+    }
+
+    console.log(movies);
+    let randomMovie = movies[0];
+    setState({ movies, randomMovie });
+  }
 
   const { randomMovie, movies } = state;
 
   if (!movies.length) {
     return (
       <Wrapper>
-        {/* <OptionsLimit getMovies={getMovies} /> */}
-        <button
+        <GlobalStyle />
+        <OptionsLimit getMovies={getMovies} />
+        {/* <button
           onClick={() => {
             getMovies();
           }}
-          style={{ padding: "5rem" }}
+          style={{ padding: "5rem", "backgroundColor": "#231e39" }}
         >
           Get Movies
-        </button>
+        </button> */}
       </Wrapper>
     );
   } else {
     return (
       <Wrapper>
-        {/* <OptionsLimit getMovies={getMovies} /> */}
+        <GlobalStyle />
+        <OptionsLimit getMovies={getMovies} />
         <RandomMovie randomMovie={randomMovie} />
       </Wrapper>
     );
